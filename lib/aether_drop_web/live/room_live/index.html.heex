@@ -145,7 +145,7 @@
     </button>
   </div>
   <div class="p-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
-    AetherDrop v2.0
+    Wondrop v0.1.0
   </div>
 </div>
 
@@ -162,7 +162,7 @@
 <!-- Main Container -->
 <main
   id="room-container"
-  class="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-x-hidden pt-16 md:pt-0"
+  class="pt-20 pb-6 px-4 md:px-8 max-w-7xl mx-auto min-h-screen md:h-[calc(100vh-1rem)] flex flex-col md:flex-row gap-6"
   phx-hook="WebRTC"
   data-room={@room_slug}
   data-device={@device.id}
@@ -453,7 +453,7 @@
 
       <div class="flex gap-2">
         <div class="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-500 font-mono truncate select-all">
-          aether.drop/r/{@room_slug}
+          wondrop.link/r/{@room_slug}
         </div>
         <button
           onclick="
@@ -483,7 +483,7 @@
         <div>
           <h4 class="text-sm font-bold text-sky-900 dark:text-sky-400">Offline Tip</h4>
           <p class="text-xs text-sky-800/70 dark:text-sky-400/70 leading-relaxed">
-            No Wi-Fi? Connect devices to a <strong>Mobile Hotspot</strong>. AetherDrop works fully offline on local networks.
+            No Wi-Fi? Connect devices to a <strong>Mobile Hotspot</strong>. Wondrop works fully offline on local networks.
           </p>
         </div>
       </div>

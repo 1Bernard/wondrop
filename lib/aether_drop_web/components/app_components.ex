@@ -49,19 +49,17 @@ defmodule AetherDropWeb.AppComponents do
       <div class="radar-circle"></div>
       
     <!-- Center Dot -->
-      <div
-        class="w-4 h-4 rounded-full shadow-lg z-10 relative transition-all duration-500"
-        class={[
-          if(@mode == :bridge,
-            do: "bg-purple-500 shadow-purple-500/50",
-            else: "bg-sky-500 shadow-sky-500/50"
-          )
-        ]}
-      >
-        <div
-          class="absolute -inset-4 rounded-full animate-ping transition-colors duration-500"
-          class={[if(@mode == :bridge, do: "bg-purple-500/20", else: "bg-sky-500/20")]}
-        >
+      <div class={[
+        "w-4 h-4 rounded-full shadow-lg z-10 relative transition-all duration-500",
+        if(@mode == :bridge,
+          do: "bg-purple-500 shadow-purple-500/50",
+          else: "bg-sky-500 shadow-sky-500/50"
+        )
+      ]}>
+        <div class={[
+          "absolute -inset-4 rounded-full animate-ping transition-colors duration-500",
+          if(@mode == :bridge, do: "bg-purple-500/20", else: "bg-sky-500/20")
+        ]}>
         </div>
       </div>
       
