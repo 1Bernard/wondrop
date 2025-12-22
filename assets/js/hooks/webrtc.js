@@ -7,6 +7,7 @@ export const WebRTC = {
     this.pendingFiles = [];
     this.canceledTransfers = new Set();
     this.bridgeMode = this.el.dataset.bridgeMode === "true";
+    this.offers = {}; // transferId -> { file, bridgeMode }
 
     // Identity
     this.currentId = this.el.dataset.device;
@@ -79,48 +80,53 @@ export const WebRTC = {
         }
     });
 
+    // Listen for Approval to start sending
+    this.handleEvent("file:approved", ({ id, receiver_id }) => {
+        if (this.offers[id]) {
+            const { file } = this.offers[id];
+            const bridgeMode = this.el.dataset.bridgeMode === "true";
+
+            console.log(`[Approval] File ${id} approved by ${receiver_id}. Starting stream...`);
+
+            if (bridgeMode) {
+                // If in Bridge Mode, we only need to start the stream once
+                this.sendViaBridge(file, id);
+                delete this.offers[id]; // Don't start multiple bridge streams
+            } else {
+                // If P2P, send to the specific peer who approved
+                const peer = this.peers[receiver_id];
+                if (peer && peer.connected) {
+                    this.sendFile(peer, file, id);
+                    // We keep the offer in case other peers approve too!
+                } else {
+                    console.warn(`[Approval] Peer ${receiver_id} not connected. Cannot send P2P.`);
+                }
+            }
+        }
+    });
+
     // Listen for local file upload event
     window.addEventListener("start-transfer", (e) => {
         const file = e.detail.file;
         const transferId = e.detail.transferId;
         const bridgeMode = this.el.dataset.bridgeMode === "true";
 
-        console.log(`Queueing Transfer (Bridge: ${bridgeMode}):`, file.name);
+        console.log(`[Flow] Offer created for ${file.name}. Waiting for receiver approval...`);
+        this.offers[transferId] = { file, bridgeMode };
         
-        // If Bridge Mode is active, send via server immediately
-        if (bridgeMode) {
-            console.log("Sending via Bridge Mode (Server Relay)");
-            this.sendViaBridge(file, transferId);
-            return;
-        }
-
-        let sent = false;
-        Object.values(this.peers).forEach(peer => {
-            if(peer.connected) {
-                this.sendFile(peer, file, transferId);
-                sent = true;
+        // We only trigger feedback here
+        this.pushEvent("peer_error", { error: "Awaiting receiver approval..." });
+        
+        // Auto-switch reminder logic (can stay or go, but let's keep it for unreachable peers)
+        const delay = window.isSecureContext ? 3000 : 500;
+        setTimeout(() => {
+            const isStillPending = !!this.offers[transferId];
+            const hasConnectedPeers = Object.values(this.peers).some(p => p.connected);
+            
+            if (isStillPending && !hasConnectedPeers && !this.bridgeMode) {
+                this.pushEvent("bridge:auto_switch", { reason: "no_peers" });
             }
-        });
-
-        // If not sent to anyone (no peers connected), add to pending
-        if (!sent) {
-            this.pendingFiles.push({ file, transferId });
-            console.log(`[P2P] No active peer. Queuing ${file.name} for handover.`);
-            this.pushEvent("peer_error", { error: "Searching for nearby devices..." });
-
-            // Auto-switch to Bridge Mode after 3s if still no peers connected
-            // Or immediately if in insecure context
-            const delay = window.isSecureContext ? 3000 : 500;
-            setTimeout(() => {
-                const isStillPending = this.pendingFiles.some(f => f.transferId === transferId);
-                const hasConnectedPeers = Object.values(this.peers).some(p => p.connected);
-                
-                if (isStillPending && !hasConnectedPeers && !this.bridgeMode) {
-                    console.log("[P2P] Still no direct connection. Suggesting Bridge Mode auto-switch.");
-                    this.pushEvent("bridge:auto_switch", { reason: "no_peers" });
-                }
-            }, delay);
-        }
+        }, delay);
     });
     
     // Listen for relayed bridge chunks
@@ -164,6 +170,9 @@ export const WebRTC = {
         // Cleanup receiver buffers
         if (this.chunks[id]) {
             delete this.chunks[id];
+        }
+        if (this.offers[id]) {
+            delete this.offers[id];
         }
         // Cleanup transfer tracking
         if (this.currentTransfer) {

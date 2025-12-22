@@ -253,24 +253,44 @@ defmodule AetherDropWeb.AppComponents do
           </div>
           <!-- Actions -->
           <div class="flex items-center gap-1">
-            <!-- Only show download if completed AND NOT Sender -->
-            <%= if (transfer.state == :completed or transfer.progress >= 100) and transfer.sender_id != @device_id do %>
+            <!-- Accept/Decline (For Receiver in Pending state) -->
+            <%= if transfer.state == :pending and transfer.sender_id != @device_id do %>
               <button
-                phx-click="save_file"
+                phx-click="file:accept"
                 phx-value-id={transfer.id}
-                class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
-                title="Download File"
+                class="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center gap-1.5"
+                title="Accept Transfer"
               >
-                <i class="ph-bold ph-download-simple"></i>
+                <i class="ph-bold ph-check"></i> Accept
+              </button>
+              <button
+                phx-click="remove_transfer"
+                phx-value-id={transfer.id}
+                class="w-8 h-8 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
+                title="Decline"
+              >
+                <i class="ph-bold ph-x"></i>
+              </button>
+            <% else %>
+              <!-- Only show download if completed AND NOT Sender -->
+              <%= if (transfer.state == :completed or transfer.progress >= 100) and transfer.sender_id != @device_id do %>
+                <button
+                  phx-click="save_file"
+                  phx-value-id={transfer.id}
+                  class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
+                  title="Download File"
+                >
+                  <i class="ph-bold ph-download-simple"></i>
+                </button>
+              <% end %>
+              <button
+                phx-click="remove_transfer"
+                phx-value-id={transfer.id}
+                class="w-8 h-8 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
+              >
+                <i class="ph-bold ph-x"></i>
               </button>
             <% end %>
-            <button
-              phx-click="remove_transfer"
-              phx-value-id={transfer.id}
-              class="w-8 h-8 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
-            >
-              <i class="ph-bold ph-x"></i>
-            </button>
           </div>
         </div>
       <% end %>

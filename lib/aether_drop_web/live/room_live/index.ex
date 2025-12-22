@@ -370,6 +370,16 @@ defmodule AetherDropWeb.RoomLive.Index do
     {:noreply, push_event(socket, "trigger_save", %{id: id})}
   end
 
+  def handle_event("file:accept", %{"id" => id}, socket) do
+    Phoenix.PubSub.broadcast(
+      AetherDrop.PubSub,
+      "room:" <> socket.assigns.room_slug,
+      {:file_accepted, %{id: id, receiver_id: socket.assigns.device.id}}
+    )
+
+    {:noreply, socket}
+  end
+
   def handle_event("remove_transfer", %{"id" => id}, socket) do
     # 1. Inform everyone that this transfer is dead
     Phoenix.PubSub.broadcast(
@@ -448,6 +458,11 @@ defmodule AetherDropWeb.RoomLive.Index do
       end
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:file_accepted, payload}, socket) do
+    {:noreply, push_event(socket, "file:approved", payload)}
   end
 
   @impl true
