@@ -1,0 +1,17 @@
+<main class="w-full h-full">
+  <div class="fixed top-0 right-0 z-[100] w-full max-w-sm p-4 flex flex-col gap-2 pointer-events-none">
+    <AetherDropWeb.CoreComponents.flash
+      kind={:info}
+      title="Info"
+      flash={@flash}
+      class="pointer-events-auto"
+    />
+    <AetherDropWeb.CoreComponents.flash
+      kind={:error}
+      title="Error"
+      flash={@flash}
+      class="pointer-events-auto"
+    />
+  </div>
+  {@inner_content}
+</main>

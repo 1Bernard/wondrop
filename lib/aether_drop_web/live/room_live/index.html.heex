@@ -1,0 +1,574 @@
+<!-- Background Ambient Gradients -->
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+  <div
+    class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] animate-float transition-colors duration-1000"
+    id="bg-blob-1"
+  >
+  </div>
+  <div
+    class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[120px] animate-float transition-colors duration-1000"
+    style="animation-delay: -3s;"
+    id="bg-blob-2"
+  >
+  </div>
+</div>
+
+<!-- Header -->
+<nav class="w-full h-16 glass flex items-center justify-between px-4 md:px-6 fixed top-0 z-50 shadow-sm">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-cyan-500/20">
+      <i class="ph-bold ph-paper-plane-tilt text-xl"></i>
+    </div>
+    <span class="text-xl font-bold tracking-tight hidden md:inline text-slate-900 dark:text-white">
+      Won<span class="text-sky-500">drop</span>
+    </span>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <!-- Room ID (Desktop) -->
+    <button
+      phx-click="toggle_qr"
+      class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-sky-400 transition-all group shadow-inner"
+    >
+      <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+      <span class="text-xs font-mono font-medium text-slate-600 dark:text-slate-400">
+        {@room_slug}
+      </span>
+      <i class="ph ph-qr-code text-slate-600 dark:text-slate-400 group-hover:text-sky-500"></i>
+    </button>
+    
+<!-- Bridge Mode Toggle -->
+    <div
+      class="hidden md:flex items-center gap-2 px-2 py-1 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+      title="Relay Mode"
+    >
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          value=""
+          class="sr-only peer"
+          id="bridge-toggle"
+          phx-click="toggle_bridge"
+          checked={@bridge_mode}
+        />
+        <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-500 shadow-inner">
+        </div>
+      </label>
+      <i
+        class={[
+          "ph ph-globe-hemisphere-west text-xl transition-colors",
+          if(@bridge_mode, do: "text-purple-500", else: "text-slate-500 dark:text-slate-400")
+        ]}
+        id="bridge-icon"
+      >
+      </i>
+    </div>
+    
+<!-- Mobile Menu Toggle -->
+    <button
+      phx-click="toggle_mobile_menu"
+      class="md:hidden w-10 h-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 flex items-center justify-center transition-colors active:scale-95"
+    >
+      <i class="ph-bold ph-list text-xl"></i>
+    </button>
+    
+<!-- Settings Button (Desktop) -->
+    <button
+      phx-click="toggle_settings"
+      class="hidden md:flex w-10 h-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 items-center justify-center transition-colors active:scale-95"
+    >
+      <i class="ph-fill ph-gear text-xl text-slate-600 dark:text-slate-400"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Navigation Drawer -->
+<div
+  id="mobile-menu"
+  class={[
+    "fixed inset-y-0 right-0 z-[60] w-64 bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 md:hidden flex flex-col border-l border-slate-200 dark:border-slate-800",
+    if(@show_mobile_menu, do: "translate-x-0", else: "translate-x-full")
+  ]}
+>
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+    <span class="font-bold text-lg">Menu</span>
+    <button
+      phx-click="toggle_mobile_menu"
+      class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+    >
+      <i class="ph-bold ph-x"></i>
+    </button>
+  </div>
+  <div class="p-4 space-y-2 flex-1">
+    <div class="bg-slate-100 dark:bg-slate-800 rounded-xl p-4 mb-4 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+        ME
+      </div>
+      <div class="overflow-hidden">
+        <div class="font-bold text-sm truncate text-slate-800 dark:text-white">
+          {@device.name}
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">{@device.id}</div>
+      </div>
+    </div>
+    
+<!-- Mobile Bridge Toggle -->
+    <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50">
+      <span class="text-sm font-medium flex items-center gap-2">
+        <i class="ph ph-globe text-lg"></i> Bridge Mode
+      </span>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          value=""
+          class="sr-only peer"
+          phx-click="toggle_bridge"
+          checked={@bridge_mode}
+        />
+        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500">
+        </div>
+      </label>
+    </div>
+
+    <button
+      phx-click="toggle_qr"
+      class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 text-left"
+    >
+      <i class="ph ph-qr-code text-lg"></i> <span class="text-sm font-medium">Show Room QR</span>
+    </button>
+
+    <button
+      phx-click="toggle_settings"
+      class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 text-left"
+    >
+      <i class="ph ph-gear text-lg"></i> <span class="text-sm font-medium">Settings</span>
+    </button>
+  </div>
+  <div class="p-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
+    AetherDrop v2.0
+  </div>
+</div>
+
+<!-- Mobile Overlay -->
+<%= if @show_mobile_menu do %>
+  <div
+    id="mobile-menu-overlay"
+    phx-click="toggle_mobile_menu"
+    class="fixed inset-0 bg-black/50 z-[55] backdrop-blur-sm transition-opacity"
+  >
+  </div>
+<% end %>
+
+<!-- Main Container -->
+<main
+  id="webrtc-manager"
+  phx-hook="WebRTC"
+  data-device={@device.id}
+  data-room={@room_slug}
+  data-bridge-mode={to_string(@bridge_mode)}
+  class="pt-20 pb-6 px-4 md:px-8 max-w-7xl mx-auto h-[calc(100vh-1rem)] flex flex-col md:flex-row gap-6"
+>
+  <!-- Session Management Hook -->
+  <div id="session-manager" phx-hook="Session" class="hidden"></div>
+
+  <%= if @insecure_context do %>
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] w-[90%] md:w-auto">
+      <div class="flex items-center gap-3 px-4 py-2 bg-amber-500/10 backdrop-blur-md border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full shadow-lg animate-in slide-in-from-top-4 duration-500">
+        <i class="ph-bold ph-shield-warning text-lg animate-pulse"></i>
+        <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+          <span class="text-xs font-bold whitespace-nowrap uppercase tracking-wider">
+            Relay Mode Active
+          </span>
+          <span class="text-[10px] md:text-xs opacity-80">
+            Browser security (HTTP) blocked direct P2P. Switched to Relay for delivery.
+          </span>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  
+<!-- Left Panel: Discovery & Devices -->
+  <div class="w-full md:w-1/3 flex flex-col gap-6 h-full min-h-[300px]">
+    
+<!-- User Profile (Desktop) -->
+    <div class="hidden md:block glass rounded-2xl p-5 shadow-sm relative overflow-hidden group border-l-4 border-l-sky-500">
+      <div class="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          phx-click="toggle_settings"
+          class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+        >
+          <i class="ph-bold ph-pencil-simple"></i>
+        </button>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold shadow-md shadow-purple-500/20">
+          ME
+        </div>
+        <div>
+          <h2 class="text-lg font-bold truncate max-w-[150px] text-slate-800 dark:text-white">
+            {@device.name}
+          </h2>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span class="text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+              {@device.id}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+<!-- Radar / Device List -->
+    <div class="glass rounded-2xl flex-1 flex flex-col relative overflow-hidden shadow-sm">
+      <AppComponents.radar
+        mode={if @bridge_mode, do: :bridge, else: :local}
+        devices={@devices_nearby}
+        selected_peer_id={@selected_peer_id}
+        connecting_peer_id={@connecting_peer_id}
+        scanning={@is_scanning}
+      />
+    </div>
+  </div>
+  
+<!-- Right Panel: Actions Workspace -->
+  <div class="w-full md:w-2/3 flex flex-col gap-4 h-full">
+    
+<!-- Tab Navigation -->
+    <div class="w-full md:w-fit">
+      <AppComponents.tab_navigation
+        active_tab={@active_tab}
+        chat_unread_count={@unread_chat_count}
+        files_unread_count={@unread_files_count}
+      />
+    </div>
+    
+<!-- Content Area -->
+    <div class="glass rounded-2xl flex-1 p-4 md:p-6 relative overflow-hidden transition-all shadow-lg flex flex-col">
+      <%= if @active_tab == "files" do %>
+        <div id="section-files" class="h-full flex flex-col">
+          <!-- Drop Zone -->
+          <!-- Drop Zone -->
+          <div class="relative group cursor-pointer overflow-hidden rounded-3xl transition-all duration-500 mb-6">
+            <div class="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-purple-500/5 group-hover:from-sky-500/10 group-hover:to-purple-500/10 transition-colors duration-500">
+            </div>
+            <div class="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-slate-900/40 border border-white/20 dark:border-white/10 group-hover:border-sky-500/30 transition-all duration-500 rounded-3xl">
+            </div>
+
+            <div class="relative z-10 h-48 flex flex-col items-center justify-center p-6 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 shadow-xl shadow-sky-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border border-slate-100 dark:border-slate-700">
+                <i class="ph-duotone ph-cloud-arrow-up text-3xl text-sky-500 group-hover:text-purple-500 transition-colors duration-500">
+                </i>
+              </div>
+
+              <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 mb-1">
+                Upload Files
+              </h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400 max-w-[200px] leading-relaxed group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
+                Drag & drop or
+                <span class="text-sky-500 font-bold underline decoration-2 decoration-sky-500/30 hover:decoration-sky-500 transition-all">
+                  browse
+                </span>
+                to send
+              </p>
+            </div>
+            
+<!-- Dashed Border Overlay -->
+            <div class="absolute inset-4 border-2 border-dashed border-slate-300/50 dark:border-slate-600/50 rounded-2xl pointer-events-none group-hover:border-sky-400/50 transition-colors duration-500">
+            </div>
+
+            <input
+              type="file"
+              id="file-input"
+              class="absolute inset-0 opacity-0 cursor-pointer z-20"
+              phx-hook="FileUpload"
+            />
+          </div>
+          
+<!-- Recent Transfers List -->
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Activity Queue
+            </h4>
+            <button
+              phx-click="clear_transfers"
+              class="text-xs text-sky-500 font-medium hover:underline"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth" id="file-list">
+            <AppComponents.file_list transfers={@transfers} device_id={@device.id} />
+          </div>
+        </div>
+      <% end %>
+
+      <%= if @active_tab == "clipboard" do %>
+        <div id="section-clipboard" class="h-full flex flex-col relative animate-slide-in">
+          <form phx-submit="clipboard:push" class="flex-1 flex flex-col gap-3">
+            <div class="relative flex-1 group">
+              <textarea
+                id="clipboard-input"
+                name="content"
+                placeholder="Paste text here to share with other devices..."
+                class="w-full h-full min-h-[120px] bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none transition-all placeholder:text-slate-400 group-hover:border-sky-500/30"
+              ></textarea>
+              <div class="absolute bottom-3 right-3 flex gap-2">
+                <button
+                  type="button"
+                  onclick="let ta = document.getElementById('clipboard-input'); ta.value = ''; ta.focus();"
+                  class="p-2 bg-slate-200/80 dark:bg-slate-800/80 text-slate-500 hover:text-red-500 rounded-lg transition-colors backdrop-blur-md"
+                  title="Clear text"
+                >
+                  <i class="ph-bold ph-trash"></i>
+                </button>
+                <button
+                  type="button"
+                  id="btn-copy"
+                  onclick="
+                    let ta = document.getElementById('clipboard-input');
+                    navigator.clipboard.writeText(ta.value).then(() => {
+                      let btn = this;
+                      let original = btn.innerHTML;
+                      btn.classList.add('bg-green-500', 'text-white');
+                      btn.classList.remove('bg-slate-200/80', 'dark:bg-slate-800/80', 'text-slate-700', 'dark:text-slate-200');
+                      btn.innerHTML = '<i class=\'ph-bold ph-check\'></i> Copied!';
+                      setTimeout(() => {
+                        btn.innerHTML = original;
+                        btn.classList.remove('bg-green-500', 'text-white');
+                        btn.classList.add('bg-slate-200/80', 'dark:bg-slate-800/80', 'text-slate-700', 'dark:text-slate-200');
+                      }, 2000);
+                    });
+                  "
+                  class="px-4 py-2 bg-slate-200/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg font-bold text-xs uppercase tracking-wide transition-all backdrop-blur-md flex items-center gap-2"
+                >
+                  <i class="ph-bold ph-copy"></i> Copy
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500 dark:text-slate-400">
+                Share text across devices instantly
+              </span>
+              <button
+                type="submit"
+                class="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white rounded-lg font-bold text-xs uppercase tracking-wide shadow-lg shadow-sky-500/20 transition-all transform active:scale-95 flex items-center gap-2"
+              >
+                <i class="ph-bold ph-paper-plane-tilt"></i> Push
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-xl flex items-start gap-3">
+            <i class="ph-fill ph-info text-yellow-500 mt-0.5"></i>
+            <p class="text-xs text-yellow-700 dark:text-yellow-500">
+              <strong>Privacy Note:</strong>
+              Content is end-to-end encrypted and transient. It is cleared from memory when you leave.
+            </p>
+          </div>
+        </div>
+      <% end %>
+
+      <%= if @active_tab == "chat" do %>
+        <div id="section-chat" class="h-full flex flex-col relative animate-slide-in">
+          <!-- Messages List -->
+          <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 p-4 scroll-smooth">
+            <%= if @messages == [] do %>
+              <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+                <i class="ph-duotone ph-chat-circle-dots text-6xl mb-2"></i>
+                <p class="text-sm">No messages yet</p>
+              </div>
+            <% else %>
+              <%= for msg <- Enum.reverse(@messages) do %>
+                <div class={[
+                  "flex flex-col max-w-[80%]",
+                  if(msg.sender_id == @device.id,
+                    do: "self-end items-end",
+                    else: "self-start items-start"
+                  )
+                ]}>
+                  <div class={[
+                    "px-4 py-2 rounded-2xl text-sm shadow-sm break-words",
+                    if(msg.sender_id == @device.id,
+                      do: "bg-sky-500 text-white rounded-br-none",
+                      else:
+                        "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none"
+                    )
+                  ]}>
+                    {msg.content}
+                  </div>
+                  <span class="text-[10px] text-slate-400 mt-1 px-1">
+                    {msg.sender_name} • {Calendar.strftime(msg.timestamp, "%I:%M %p")}
+                  </span>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+          
+<!-- Input Area -->
+          <div class="mt-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <form phx-submit="chat:send" class="flex items-center gap-2">
+              <input
+                type="text"
+                name="content"
+                class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                placeholder="Type a message..."
+                autocomplete="off"
+              />
+              <button
+                type="submit"
+                class="p-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl transition-colors shadow-lg shadow-sky-500/20"
+              >
+                <i class="ph-bold ph-paper-plane-right"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</main>
+
+<!-- QR Code Modal -->
+<%= if @show_qr do %>
+  <div id="qr-modal" class="fixed inset-0 z-[70] transition-opacity duration-300">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" phx-click="toggle_qr"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm p-8 glass rounded-3xl shadow-2xl transform scale-100 transition-all border border-white/10">
+      <button class="absolute top-4 right-4 text-slate-400 hover:text-white" phx-click="toggle_qr">
+        <i class="ph-bold ph-x text-xl"></i>
+      </button>
+      <div class="text-center mb-8">
+        <h3 class="text-2xl font-bold mb-2">Join Room</h3>
+        <p class="text-slate-500 text-sm">Scan to connect instantly</p>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl mx-auto w-56 h-56 mb-8 shadow-inner flex items-center justify-center relative overflow-hidden group border-4 border-white qrcode-container">
+        {Phoenix.HTML.raw(@qr_svg)}
+        <div class="absolute top-0 left-0 w-full h-1 bg-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.8)] animate-[scan_2s_linear_infinite]">
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <div class="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-500 font-mono truncate select-all">
+          aether.drop/r/{@room_slug}
+        </div>
+        <button
+          onclick="
+            document.getElementById('clipboard-hook').dispatchEvent(new CustomEvent('copy-current-url'));
+            const btn = this;
+            const original = btn.innerText;
+            btn.innerText = 'Copied!';
+            btn.classList.add('bg-green-500', 'hover:bg-green-600');
+            btn.classList.remove('bg-sky-500', 'hover:bg-sky-600');
+            setTimeout(() => {
+              btn.innerText = original;
+              btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+              btn.classList.add('bg-sky-500', 'hover:bg-sky-600');
+            }, 2000);
+          "
+          class="px-5 bg-sky-500 hover:bg-sky-600 text-white rounded-xl font-bold transition-colors shadow-lg shadow-sky-500/20 active:scale-95"
+        >
+          Copy
+        </button>
+      </div>
+      
+<!-- Offline Tip -->
+      <div class="mt-8 p-4 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 flex gap-3">
+        <div class="w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center shrink-0">
+          <i class="ph-bold ph-lightning text-lg"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-sky-900 dark:text-sky-400">Offline Tip</h4>
+          <p class="text-xs text-sky-800/70 dark:text-sky-400/70 leading-relaxed">
+            No Wi-Fi? Connect devices to a <strong>Mobile Hotspot</strong>. AetherDrop works fully offline on local networks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Settings Modal -->
+<.modal id="settings-modal" show={@show_settings} on_cancel="toggle_settings">
+  <div class="p-6">
+    <h3 class="text-xl font-bold mb-4">Settings</h3>
+    <form phx-submit="save_and_close_settings" phx-change="save_settings">
+      <div class="mb-6">
+        <label class="block text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">
+          Device Name
+        </label>
+        <div class="flex items-center gap-2">
+          <input
+            type="text"
+            name="name"
+            value={@device.name}
+            class="min-w-0 flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-3 focus:ring-2 focus:ring-sky-500 focus:outline-none transition-all font-medium text-slate-800 dark:text-white text-sm"
+          />
+          <button
+            type="submit"
+            class="shrink-0 w-12 h-12 flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-green-500 hover:text-white rounded-xl font-medium transition-colors"
+          >
+            <i class="ph-bold ph-check text-lg"></i>
+          </button>
+        </div>
+      </div>
+      
+<!-- Privacy & Transfer -->
+      <div>
+        <label class="block text-xs font-bold uppercase text-slate-500 tracking-wider mb-3">
+          Preferences
+        </label>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center">
+                <i class="ph-fill ph-ghost text-lg"></i>
+              </div>
+              <div>
+                <div class="font-bold text-sm text-slate-800 dark:text-gray-200">
+                  Stealth Mode
+                </div>
+                <div class="text-xs text-slate-500">Hide from radar</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                class="sr-only peer"
+                name="stealth_mode"
+                checked={Map.get(@device, :stealth_mode, false)}
+              />
+              <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500">
+              </div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 flex items-center justify-center">
+                <i class="ph-fill ph-lightning text-lg"></i>
+              </div>
+              <div>
+                <div class="font-bold text-sm text-slate-800 dark:text-gray-200">Quick Save</div>
+                <div class="text-xs text-slate-500">Auto-accept files</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                class="sr-only peer"
+                name="quick_save"
+                checked={Map.get(@device, :quick_save, false)}
+              />
+              <div class="w-10 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</.modal>
+
+<div id="clipboard-hook" phx-hook="Clipboard" class="hidden"></div>
