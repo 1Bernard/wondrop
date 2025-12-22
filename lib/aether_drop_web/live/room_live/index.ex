@@ -61,18 +61,19 @@ defmodule AetherDropWeb.RoomLive.Index do
     {:noreply,
      socket
      |> assign(:room_url, room_url)
+     |> assign(:is_local, local_network?(url))
      |> assign(:qr_svg, generate_qr_svg(room_url))
      |> apply_action(socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "AetherDrop Room")
+    |> assign(:page_title, "Wondrop")
   end
 
   defp apply_action(socket, :room, _params) do
     socket
-    |> assign(:page_title, "Room: " <> socket.assigns.room_slug)
+    |> assign(:page_title, "Wondrop Room: " <> socket.assigns.room_slug)
   end
 
   @impl true
@@ -622,5 +623,13 @@ defmodule AetherDropWeb.RoomLive.Index do
     url
     |> EQRCode.encode()
     |> EQRCode.svg(viewbox: true)
+  end
+
+  defp local_network?(url) do
+    uri = URI.parse(url)
+    host = uri.host
+
+    host in ["localhost", "127.0.0.1"] or
+      Regex.match?(~r/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|169\.254\.)/, host)
   end
 end

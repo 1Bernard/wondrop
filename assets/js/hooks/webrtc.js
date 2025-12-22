@@ -7,6 +7,7 @@ export const WebRTC = {
     this.pendingFiles = [];
     this.canceledTransfers = new Set();
     this.bridgeMode = this.el.dataset.bridgeMode === "true";
+    this.isLocal = this.el.dataset.isLocal === "true";
     this.offers = {}; // transferId -> { file, bridgeMode }
 
     // Identity
@@ -272,9 +273,11 @@ export const WebRTC = {
         peer = new SimplePeer({
           initiator: initiator,
           trickle: true,
-          // Default config includes STUN, but host candidates (mDNS/IP) 
-          // will work offline if STUN servers are unreachable.
-          config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } 
+          // If we are on a local network (or hotspot), skip STUN to avoid timeout delays
+          // Host candidates (local IPs) are gathered automatically and are sufficient.
+          config: { 
+            iceServers: this.isLocal ? [] : [{ urls: 'stun:stun.l.google.com:19302' }] 
+          } 
         });
     } catch (e) {
         console.error("CRITICAL: P2P Connection failed to initialize. Likely 'Insecure Context' (HTTP).", e);

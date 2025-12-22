@@ -161,12 +161,13 @@
 
 <!-- Main Container -->
 <main
-  id="webrtc-manager"
+  id="room-container"
+  class="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-x-hidden pt-16 md:pt-0"
   phx-hook="WebRTC"
-  data-device={@device.id}
   data-room={@room_slug}
+  data-device={@device.id}
   data-bridge-mode={to_string(@bridge_mode)}
-  class="pt-20 pb-6 px-4 md:px-8 max-w-7xl mx-auto h-[calc(100vh-1rem)] flex flex-col md:flex-row gap-6"
+  data-is-local={to_string(@is_local)}
 >
   <!-- Session Management Hook -->
   <div id="session-manager" phx-hook="Session" class="hidden"></div>
