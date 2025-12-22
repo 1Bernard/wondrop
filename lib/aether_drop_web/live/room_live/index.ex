@@ -43,6 +43,7 @@ defmodule AetherDropWeb.RoomLive.Index do
      |> assign(:room_url, "")
      |> assign(:qr_svg, "")
      |> assign(:connecting_peer_id, nil)
+     |> assign(:connected_peer_ids, MapSet.new())
      |> assign(:insecure_context, false)
      |> assign(:page_title, "Wondrop Room: " <> room_slug)}
   end
@@ -356,7 +357,8 @@ defmodule AetherDropWeb.RoomLive.Index do
     {:noreply,
      socket
      |> assign(:connecting_peer_id, nil)
-     |> put_flash(:info, "Connected to peer #{peer_id}")}
+     |> update(:connected_peer_ids, &MapSet.put(&1, peer_id))
+     |> put_flash(:info, "Connected reached for peer #{peer_id}")}
   end
 
   def handle_event("select_device", %{"id" => peer_id}, socket) do
@@ -529,8 +531,19 @@ defmodule AetherDropWeb.RoomLive.Index do
   end
 
   @impl true
-  def handle_info(%{event: "presence_diff", payload: _payload}, socket) do
-    {:noreply, assign(socket, :devices_nearby, get_nearby_devices(socket))}
+  def handle_info(%{event: "presence_diff", payload: payload}, socket) do
+    # Cleanup connected_peer_ids if they left
+    leaves = Map.keys(payload.leaves)
+
+    connected_peer_ids =
+      Enum.reduce(leaves, socket.assigns.connected_peer_ids, fn id, acc ->
+        MapSet.delete(acc, id)
+      end)
+
+    {:noreply,
+     socket
+     |> assign(:devices_nearby, get_nearby_devices(socket))
+     |> assign(:connected_peer_ids, connected_peer_ids)}
   end
 
   @impl true

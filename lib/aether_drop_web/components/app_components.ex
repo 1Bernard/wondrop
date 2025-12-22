@@ -8,6 +8,7 @@ defmodule AetherDropWeb.AppComponents do
   attr :devices, :list, default: []
   attr :selected_peer_id, :string, default: nil
   attr :connecting_peer_id, :string, default: nil
+  attr :connected_peer_ids, :any, default: MapSet.new()
   attr :scanning, :boolean, default: false
 
   def radar(assigns) do
@@ -70,6 +71,7 @@ defmodule AetherDropWeb.AppComponents do
           device={device}
           selected={@selected_peer_id == device.id}
           connecting={@connecting_peer_id == device.id}
+          connected={MapSet.member?(@connected_peer_ids, device.id)}
         />
       <% end %>
     </div>
@@ -79,6 +81,7 @@ defmodule AetherDropWeb.AppComponents do
   attr :device, :map, required: true
   attr :selected, :boolean, default: false
   attr :connecting, :boolean, default: false
+  attr :connected, :boolean, default: false
 
   def device_node(assigns) do
     ~H"""
@@ -104,26 +107,39 @@ defmodule AetherDropWeb.AppComponents do
         <i class={[
           "ph-duotone text-2xl transition-colors",
           if(@device.type == :mobile, do: "ph-device-mobile", else: "ph-desktop"),
-          if(@selected,
-            do: "text-green-600 dark:text-green-500",
-            else: "text-slate-700 dark:text-slate-200"
-          )
+          cond do
+            @selected -> "text-green-600 dark:text-green-500"
+            @connected -> "text-sky-600 dark:text-sky-400"
+            true -> "text-slate-700 dark:text-slate-200"
+          end
         ]}>
         </i>
         <div
-          :if={@selected}
-          class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"
+          :if={@selected or @connected}
+          class={[
+            "absolute -top-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full",
+            if(@selected,
+              do: "bg-green-500",
+              else: "bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+            )
+          ]}
         >
+          <div
+            :if={@connected}
+            class="absolute inset-0 bg-sky-400 rounded-full animate-ping opacity-75"
+          >
+          </div>
         </div>
       </div>
       <span class={[
         "absolute -bottom-7 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded transition-all whitespace-nowrap bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm z-40",
-        if(@selected,
+        if(@selected or @connected,
           do: "opacity-100",
           else: "opacity-0 group-hover:opacity-100"
         )
       ]}>
         {@device.name}
+        <span :if={@connected} class="ml-1 text-[8px] text-sky-500">LIVE</span>
       </span>
       <div
         :if={@connecting}
