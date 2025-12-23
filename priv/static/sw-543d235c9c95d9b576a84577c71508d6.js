@@ -6,8 +6,8 @@ const ASSETS_TO_CACHE = [
   "/",
   "/app",
   "/manifest.json",
-  "/assets/js/app-bf1460e6dbd74f67ae7a7a01af42d801.js",
-  "/assets/css/app-1ec977f183e3c1604bd07123e808d0f2.css",
+  "/assets/js/app-836d54d0d566da9daf3d8fddc9b73326.js",
+  "/assets/css/app-0075ee2638e41538159779843ea54c15.css",
   "/images/logo-06a11be1f2cdde2c851763d00bdd2e80.svg",
   "/images/icon-192-e707fcad5be71a627ab2d59dcbb2e400.png",
   "/images/icon-512-d82f3168192fa5d76d6ebe05ab3f9f12.png"

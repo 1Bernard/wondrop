@@ -441,7 +441,12 @@
           @active_tab != "clipboard" && "hidden"
         ]}
       >
-        <form phx-submit="clipboard:push" class="flex-1 flex flex-col gap-3">
+        <form
+          phx-submit="clipboard:push"
+          class="flex-1 flex flex-col gap-3"
+          phx-hook="Clipboard"
+          id="clipboard-container"
+        >
           <div class="relative flex-1 group">
             <textarea
               id="clipboard-input"
@@ -498,6 +503,9 @@
           "h-full flex flex-col relative animate-slide-in",
           @active_tab != "chat" && "hidden"
         ]}
+        phx-hook="Chat"
+        data-device-id={@device.id}
+        data-device-name={@device.name}
       >
         <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 p-4 scroll-smooth">
           <%= if @messages == [] do %>
@@ -694,5 +702,3 @@
     </form>
   </div>
 </.modal>
-
-<div id="clipboard-hook" phx-hook="Clipboard" class="hidden"></div>

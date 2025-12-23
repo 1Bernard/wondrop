@@ -203,15 +203,25 @@ export const WebRTC = {
         if (this.chunks[id]) {
             delete this.chunks[id];
         }
-        if (this.offers[id]) {
-            delete this.offers[id];
-        }
         // Cleanup transfer tracking
         if (this.currentTransfer) {
             Object.keys(this.currentTransfer).forEach(peerId => {
                 if (this.currentTransfer[peerId] === id) delete this.currentTransfer[peerId];
             });
         }
+    });
+
+    // Global P2P Broadcast (for Chat/Clipboard)
+    window.addEventListener("p2p:broadcast", (e) => {
+        const payload = e.detail;
+        const msg = JSON.stringify(payload);
+        console.log("[WebRTC] Broadcasting P2P message:", payload.type);
+        
+        Object.values(this.peers).forEach(peer => {
+            if (peer.connected) {
+                peer.send(msg);
+            }
+        });
     });
   },
 
@@ -424,7 +434,7 @@ export const WebRTC = {
 
   handleData(peerId, data) {
       try {
-          // Check if data is string (Metadata)
+          // Check if data is string (Metadata/Chat/Clipboard)
           const text = new TextDecoder().decode(data);
           const msg = JSON.parse(text);
           
@@ -436,12 +446,14 @@ export const WebRTC = {
              
           } else if (msg.type === 'file-end') {
              console.log("File reception complete:", msg.filename);
-             // Verify we have the ID, if not fallback to current (should allow multiple if concurrent)
-             // For prototype, assume strict order.
              const transferId = msg.id || this.currentTransfer[peerId];
-             
-             // Notify server we are done (optional, server triggers 'completed' state via progress calc usually)
-             // But for receiver, we just wait for user to click save.
+             this.pushEvent("file:received", { id: transferId });
+          } else if (msg.type === 'chat') {
+             console.log("[WebRTC] Received P2P Chat:", msg.content);
+             this.pushEvent("chat:received", msg);
+          } else if (msg.type === 'clipboard') {
+             console.log("[WebRTC] Received P2P Clipboard:", msg.content);
+             this.pushEvent("clipboard:received", msg);
           }
       } catch (e) {
           // Binary Data (Chunk)

@@ -247,14 +247,15 @@ defmodule AetherDropWeb.RoomLive.Index do
   end
 
   @impl true
-  def handle_event("clipboard:push", %{"content" => content}, socket) do
-    content = String.trim(content)
+  def handle_event("clipboard:push", params, socket) do
+    content = String.trim(params["content"] || "")
+    id = params["id"] || Nanoid.generate()
 
     if content != "" do
       Phoenix.PubSub.broadcast(
         AetherDrop.PubSub,
         "room:" <> socket.assigns.room_slug,
-        {:clipboard, %{sender_id: socket.assigns.device.id, content: content}}
+        {:clipboard, %{sender_id: socket.assigns.device.id, content: content, id: id}}
       )
 
       {:noreply, put_flash(socket, :info, "Text pushed to other devices!")}
@@ -264,12 +265,13 @@ defmodule AetherDropWeb.RoomLive.Index do
   end
 
   @impl true
-  def handle_event("chat:send", %{"content" => content}, socket) do
-    content = String.trim(content)
+  def handle_event("chat:send", params, socket) do
+    content = String.trim(params["content"] || "")
+    id = params["id"] || Nanoid.generate()
 
     if content != "" do
       msg = %{
-        id: Nanoid.generate(),
+        id: id,
         sender_id: socket.assigns.device.id,
         sender_name: socket.assigns.device.name,
         content: content,
