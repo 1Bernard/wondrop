@@ -6,7 +6,7 @@ const ASSETS_TO_CACHE = [
   "/",
   "/app",
   "/manifest.json",
-  "/assets/js/app-49462e57c962300057dc699f4921e3e5.js",
+  "/assets/js/app-bf1460e6dbd74f67ae7a7a01af42d801.js",
   "/assets/css/app-1ec977f183e3c1604bd07123e808d0f2.css",
   "/images/logo-06a11be1f2cdde2c851763d00bdd2e80.svg",
   "/images/icon-192-e707fcad5be71a627ab2d59dcbb2e400.png",
