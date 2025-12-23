@@ -35,6 +35,8 @@ import {Session} from "./hooks/session"
 import {FileUpload} from "./hooks/file_upload"
 import {Flash} from "./hooks/flash"
 import {Tabs} from "./hooks/tabs"
+import {ManualSignaling} from "./hooks/manual_signaling"
+import { QRScanner } from "./hooks/qr_scanner"
 
 // Initialize landing page interactions if present
 document.addEventListener("DOMContentLoaded", initLanding)

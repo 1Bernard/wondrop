@@ -192,34 +192,163 @@
   <div class="w-full md:w-1/3 flex flex-col gap-6 h-full min-h-[300px]">
     
 <!-- User Profile (Desktop) -->
-    <div class="hidden md:block glass rounded-2xl p-5 shadow-sm relative overflow-hidden group border-l-4 border-l-sky-500">
-      <div class="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          phx-click="toggle_settings"
-          class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-        >
-          <i class="ph-bold ph-pencil-simple"></i>
-        </button>
-      </div>
+    <!-- Device Info -->
+    <div class="glass rounded-2xl p-4 flex items-center justify-between mb-6 border border-white/20">
       <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold shadow-md shadow-purple-500/20">
-          ME
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+          <i class="ph-duotone ph-device-mobile-speaker text-2xl"></i>
         </div>
         <div>
-          <h2 class="text-lg font-bold truncate max-w-[150px] text-slate-800 dark:text-white">
+          <h2 class="text-sm font-bold text-slate-800 dark:text-white leading-tight">
             {@device.name}
           </h2>
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span class="text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-              {@device.id}
+          <div class="flex items-center gap-1.5">
+            <div class={[
+              "w-2 h-2 rounded-full",
+              if(@offline_mode, do: "bg-amber-500 animate-pulse", else: "bg-green-500")
+            ]}>
+            </div>
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              {if @offline_mode, do: "Offline Sync", else: "Online Signaling"}
             </span>
           </div>
         </div>
       </div>
+
+      <div class="flex gap-2">
+        <%= if @offline_mode do %>
+          <button
+            phx-click="manual:toggle"
+            class="p-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl transition-all flex items-center gap-2 group border border-amber-500/20"
+          >
+            <i class="ph-bold ph-handshake text-lg"></i>
+            <span class="text-xs font-bold uppercase tracking-wide hidden md:inline">
+              Connect Offline
+            </span>
+          </button>
+        <% end %>
+        <button
+          phx-click="toggle_settings"
+          class="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-sky-500 rounded-xl transition-colors"
+        >
+          <i class="ph-bold ph-gear-six text-xl"></i>
+        </button>
+      </div>
     </div>
     
-<!-- Radar / Device List -->
+<!-- True Offline Manual Handshake Modal -->
+    <%= if @show_manual_handshake do %>
+      <div
+        id="manual-handshake-modal"
+        class="fixed inset-0 z-[80] flex items-center justify-center p-4"
+        phx-hook="ManualSignaling"
+      >
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" phx-click="manual:toggle">
+        </div>
+        <div class="relative w-full max-w-lg glass-dark border border-white/10 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+          <button
+            class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors"
+            phx-click="manual:toggle"
+          >
+            <i class="ph-bold ph-x text-2xl"></i>
+          </button>
+
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-500/30">
+              <i class="ph-fill ph-handshake text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-black text-white mb-2">Manual Handshake</h3>
+            <p class="text-slate-400 text-sm max-w-[280px] mx-auto">
+              Establish a direct P2P link without internet.
+              Scan each other to connect.
+            </p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Step 1: Initiate (Offer) -->
+            <%= if is_nil(@manual_offer) and is_nil(@manual_answer) do %>
+              <div class="grid grid-cols-2 gap-4">
+                <button
+                  phx-click={JS.push("manual:initiate") |> JS.push("scanner:stop")}
+                  class="p-6 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white transition-all flex flex-col items-center gap-3 group shadow-xl shadow-sky-500/20"
+                >
+                  <i class="ph-bold ph-broadcast text-3xl group-hover:scale-110 transition-transform">
+                  </i>
+                  <span class="font-bold text-sm">Be Initiator</span>
+                </button>
+                <button
+                  phx-click={JS.push("scanner:start") |> JS.push("manual:toggle_scanner")}
+                  class="p-6 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all flex flex-col items-center gap-3 border border-slate-700 group"
+                >
+                  <i class="ph-bold ph-scan text-3xl group-hover:scale-110 transition-transform">
+                  </i>
+                  <span class="font-bold text-sm">Be Receiver</span>
+                </button>
+              </div>
+            <% end %>
+            
+<!-- Scanner View -->
+            <div
+              id="scanner-container"
+              class={[
+                "relative overflow-hidden rounded-2xl bg-black aspect-video border-2 border-slate-800",
+                if(!@is_scanning, do: "hidden")
+              ]}
+              phx-hook="QRScanner"
+            >
+              <div id="reader" class="w-full"></div>
+              <div class="absolute inset-x-0 bottom-4 text-center z-10">
+                <button
+                  phx-click="scanner:stop"
+                  class="px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg"
+                >
+                  Cancel Scan
+                </button>
+              </div>
+            </div>
+            
+<!-- Offer/Answer QR View -->
+            <%= if @manual_offer || @manual_answer do %>
+              <div class="space-y-6">
+                <div class="bg-white p-4 rounded-xl mx-auto w-64 h-64 shadow-inner flex items-center justify-center border-4 border-white overflow-hidden">
+                  <% qr_data = @manual_answer || @manual_offer %>
+                  <% sdp_svg = qr_data |> EQR.encode() |> EQR.svg(viewbox: true) %>
+                  {Phoenix.HTML.raw(sdp_svg)}
+                </div>
+
+                <div class="text-center">
+                  <h4 class="text-amber-400 font-bold mb-1">
+                    {if @manual_answer,
+                      do: "Last Step: Peer must scan this!",
+                      else: "Peer: Scan this Offer!"}
+                  </h4>
+                  <p class="text-[10px] text-slate-500 uppercase tracking-widest bg-slate-900/50 py-1 px-3 rounded-full inline-block">
+                    SDP Payload Active
+                  </p>
+                </div>
+
+                <%= if @manual_offer && !@manual_answer do %>
+                  <button
+                    phx-click="scanner:start"
+                    class="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold flex items-center justify-center gap-3 border border-slate-700 transition-all"
+                  >
+                    <i class="ph-bold ph-qr-code text-xl"></i> Now Scan Peer's Answer
+                  </button>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-white/5 text-center">
+            <p class="text-[10px] text-slate-500 leading-relaxed">
+              Manual handshakes are one-time secure links. Icons and interface adapt to offline state.
+            </p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    
+<!-- Connection Tip (Contextual) -->
     <div class="glass rounded-2xl flex-1 flex flex-col relative overflow-hidden shadow-sm">
       <AppComponents.radar
         mode={if @bridge_mode, do: :bridge, else: :local}

@@ -10,6 +10,37 @@ export const WebRTC = {
     this.isLocal = this.el.dataset.isLocal === "true";
     this.offers = {}; // transferId -> { file, bridgeMode }
 
+    // Listen for manual peer handoff
+    window.addEventListener("manual-peer-connected", (e) => {
+        const { peer, peerId } = e.detail;
+        console.log(`[WebRTC] Taking over manual peer: ${peerId}`);
+        
+        // Add to standard peer tracking
+        this.peers[peerId] = peer;
+        
+        // Setup standard P2P listeners
+        peer.on('data', data => this.handleData(peerId, data));
+        peer.on('error', err => {
+            console.error('[WebRTC] Manual Peer Error:', err);
+            this.pushEvent("peer_error", { error: err.toString() });
+        });
+        peer.on('close', () => {
+             console.log("[WebRTC] Manual Peer closed");
+             delete this.peers[peerId];
+        });
+
+        // Notify server/UI
+        this.pushEvent("peer_connected", { peer_id: peerId });
+
+        // Flush any pending files
+        if (this.pendingFiles.length > 0) {
+            this.pendingFiles.forEach(({ file, transferId }) => {
+                this.sendFile(peer, file, transferId);
+            });
+            this.pendingFiles = [];
+        }
+    });
+
     // Identity
     this.currentId = this.el.dataset.device;
     const deviceId = this.currentId;

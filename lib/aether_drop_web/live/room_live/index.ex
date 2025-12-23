@@ -2,6 +2,7 @@ defmodule AetherDropWeb.RoomLive.Index do
   use AetherDropWeb, :live_view
   alias AetherDropWeb.AppComponents
   alias AetherDropWeb.Presence
+  alias EQRCode, as: EQR
 
   @impl true
   def mount(%{"slug" => room_slug}, _session, socket) do
@@ -40,6 +41,12 @@ defmodule AetherDropWeb.RoomLive.Index do
      |> assign(:unread_chat_count, 0)
      |> assign(:unread_files_count, 0)
      |> assign(:is_scanning, false)
+     # Manual Signaling State
+     |> assign(:manual_offer, nil)
+     |> assign(:manual_answer, nil)
+     |> assign(:offline_mode, false)
+     |> assign(:offline_id, nil)
+     |> assign(:show_manual_handshake, false)
      |> assign(:room_url, "")
      |> assign(:qr_svg, "")
      |> assign(:connecting_peer_id, nil)
@@ -398,6 +405,74 @@ defmodule AetherDropWeb.RoomLive.Index do
      socket
      |> assign(:connecting_peer_id, nil)
      |> put_flash(:error, "Peer Error: #{msg}")}
+  end
+
+  # Manual Handshake Handlers
+  def handle_event("manual:toggle", _params, socket) do
+    {:noreply, assign(socket, :show_manual_handshake, !socket.assigns.show_manual_handshake)}
+  end
+
+  def handle_event("manual:offer_ready", %{"offer" => offer}, socket) do
+    {:noreply, assign(socket, :manual_offer, offer)}
+  end
+
+  def handle_event("manual:answer_ready", %{"answer" => answer}, socket) do
+    {:noreply, assign(socket, :manual_answer, answer)}
+  end
+
+  def handle_event("manual:toggle_scanner", _params, socket) do
+    {:noreply, assign(socket, :is_scanning, !socket.assigns.is_scanning)}
+  end
+
+  def handle_event("scanner:start", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:is_scanning, true)
+     |> push_event("scanner:start", %{})}
+  end
+
+  def handle_event("scanner:stop", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:is_scanning, false)
+     |> push_event("scanner:stop", %{})}
+  end
+
+  def handle_event("manual:connected", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_manual_handshake, false)
+     |> assign(:manual_offer, nil)
+     |> assign(:manual_answer, nil)
+     |> assign(:is_scanning, false)
+     |> put_flash(:info, "True Offline Connection Established!")}
+  end
+
+  def handle_event("manual:set_offline_id", %{"id" => id}, socket) do
+    {:noreply, assign(socket, :offline_id, id)}
+  end
+
+  def handle_event("manual:set_offline_mode", %{"offline" => offline}, socket) do
+    {:noreply, assign(socket, :offline_mode, offline)}
+  end
+
+  def handle_event("scanner:detected", %{"data" => data}, socket) do
+    # Simple heuristic to distinguish Offer vs Answer
+    # SimplePeer offers usually contain "offer" string in SDP JSON
+    socket =
+      if String.contains?(data, "\"type\":\"offer\"") do
+        # We received an offer, send it to the ManualSignaling hook to generate answer
+        socket
+        |> assign(:manual_offer, data)
+        |> push_event("manual:process_offer", %{offer: data})
+      else
+        # We received an answer, send it to the ManualSignaling hook to complete connection
+        socket
+        |> assign(:manual_answer, data)
+        |> push_event("manual:process_answer", %{answer: data})
+      end
+
+    {:noreply, socket}
   end
 
   def handle_event("insecure_context_detected", _params, socket) do

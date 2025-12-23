@@ -23,6 +23,25 @@ export const Session = {
     }
 
     // 3. Listen for Save Events from Server
+    // Persistent Offline ID
+    let offlineId = localStorage.getItem("wondrop_offline_id");
+    if (!offlineId) {
+        offlineId = "offline-" + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem("wondrop_offline_id", offlineId);
+    }
+    this.pushEvent("manual:set_offline_id", { id: offlineId });
+
+    // Global Offline Detection
+    const updateStatus = () => {
+        const isOffline = !navigator.onLine;
+        this.pushEvent("manual:set_offline_mode", { offline: isOffline });
+        document.body.classList.toggle("is-offline", isOffline);
+    };
+
+    window.addEventListener("online", updateStatus);
+    window.addEventListener("offline", updateStatus);
+    updateStatus();
+
     this.handleEvent("session:save", (payload) => {
       console.log("Saving session...", payload);
       localStorage.setItem("aether_device_id", payload.id);
