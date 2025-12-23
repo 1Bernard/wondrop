@@ -155,7 +155,11 @@ defmodule AetherDropWeb.AppComponents do
 
   def tab_navigation(assigns) do
     ~H"""
-    <div class="flex p-1 bg-slate-200/80 dark:bg-slate-800/80 backdrop-blur rounded-xl w-full md:w-fit overflow-x-auto">
+    <div
+      id="tab-navigation"
+      phx-hook="Tabs"
+      class="flex p-1 bg-slate-200/80 dark:bg-slate-800/80 backdrop-blur rounded-xl w-full md:w-fit overflow-x-auto"
+    >
       <.tab_button
         name="files"
         icon="ph-files"
@@ -189,8 +193,8 @@ defmodule AetherDropWeb.AppComponents do
   def tab_button(assigns) do
     ~H"""
     <button
-      phx-click="switch_tab"
-      phx-value-tab={@name}
+      type="button"
+      data-tab-target={@name}
       class={[
         "flex-1 md:flex-none px-6 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap",
         if(@active,

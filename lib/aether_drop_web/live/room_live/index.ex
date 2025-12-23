@@ -82,17 +82,10 @@ defmodule AetherDropWeb.RoomLive.Index do
     socket = assign(socket, :active_tab, tab)
 
     socket =
-      if tab == "chat" do
-        assign(socket, :unread_chat_count, 0)
-      else
-        socket
-      end
-
-    socket =
-      if tab == "files" do
-        assign(socket, :unread_files_count, 0)
-      else
-        socket
+      case tab do
+        "chat" -> assign(socket, :unread_chat_count, 0)
+        "files" -> assign(socket, :unread_files_count, 0)
+        _ -> socket
       end
 
     {:noreply, socket}

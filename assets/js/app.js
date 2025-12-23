@@ -34,6 +34,7 @@ import {Clipboard} from "./hooks/clipboard"
 import {Session} from "./hooks/session"
 import {FileUpload} from "./hooks/file_upload"
 import {Flash} from "./hooks/flash"
+import {Tabs} from "./hooks/tabs"
 
 // Initialize landing page interactions if present
 document.addEventListener("DOMContentLoaded", initLanding)
@@ -45,7 +46,7 @@ const csrfToken = document
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
-  hooks: { ...colocatedHooks, WebRTC, Clipboard, FileUpload, Session, Flash},
+  hooks: { ...colocatedHooks, WebRTC, Clipboard, FileUpload, Session, Flash, Tabs},
 });
 
 // Show progress bar on live navigation and form submits

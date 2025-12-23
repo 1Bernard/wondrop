@@ -14,11 +14,11 @@ Wondrop is a high-performance, decentralized file transfer platform built with *
 
 - 🚀 **Zero Installation**: Runs entirely in the browser. No App Store, no APKs, no friction.
 - 🔒 **Privacy First**: Files are transferred via P2P (WebRTC). Data never touches a persistent server.
-- 🌉 **Universal Bridge**: Automatically falls back to a secure Relay Server if P2P paths are blocked (e.g., symmetric NATs or isolated Wi-Fis).
-- 📶 **Hotspot Ready**: Optimized for field-use via mobile hotspots; detects local IP ranges automatically.
-- 📱 **PWA Support**: Installable on iOS and Android for a native-like experience.
+- 🌉 **Universal Bridge**: Automatically falls back to a secure Relay Server if P2P paths are blocked.
+- 📶 **Hotspot & Offline Ready**: Optimized for field-use via mobile hotspots with **Zero-Internet QR generation** and **Conditional STUN bypass**.
+- 📱 **Robust PWA**: Installable on iOS and Android with a custom Service Worker that synchronizes fingerprinted assets for 100% offline availability.
 - 📋 **Shared Clipboard**: Instant text synchronization across all connected devices.
-- 📡 **Live Radar**: Real-time discovery of nearby devices in the same room.
+- 📡 **Live Radar**: Real-time discovery of nearby devices with visual "Live" connectivity badges.
 
 ---
 
@@ -76,6 +76,20 @@ Wondrop is a high-performance, decentralized file transfer platform built with *
 2. **Signaling**: Devices exchange WebRTC SDP offers/answers via Phoenix Channels.
 3. **P2P Establishment**: If a direct path exists, data flows directly between browsers.
 4. **Relay (Bridge Mode)**: If P2P fails, chunks are streamed through the Phoenix server using binary PubSub messages.
+
+## 🛠 Advanced Features
+
+### Robust PWA Sync
+
+Wondrop uses a custom build-time synchronization script (`assets/pwa-sync.js`) that injects Phoenix's fingerprinted asset paths (e.g., `app-vsn.js`) into the Service Worker. This ensures that the app shell is always cached correctly, even after a deployment.
+
+### Conditional STUN Bypass
+
+To support air-gapped hotspots, Wondrop detects if it's being accessed via a local IP range (192.168.x.x, 10.x.x.x, etc.). In these cases, it skips external STUN server lookups, preventing the 15-20 second connection delay typical of browsers waiting for STUN timeouts in isolated networks.
+
+### Receiver Control
+
+Security is paramount. Senders cannot "push" files to anyone. The receiver must explicitly click "Accept" to initiate the WebRTC data channel transmission, protecting users from unwanted content and saving bandwidth.
 
 ---
 

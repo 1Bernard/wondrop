@@ -6,11 +6,11 @@ const ASSETS_TO_CACHE = [
   "/",
   "/app",
   "/manifest.json",
-  "/assets/js/app-ea34310b83bbe00362983eb41480d2f2.js",
-  "/assets/css/app-e18b30e99642b43293f342422dba216d.css",
-  "/images/logo-06a11be1f2cdde2c851763d00bdd2e80.svg",
-  "/images/icon-192-e707fcad5be71a627ab2d59dcbb2e400.png",
-  "/images/icon-512-d82f3168192fa5d76d6ebe05ab3f9f12.png"
+  "/assets/js/assets/js/app-3b8eb22cddfbedec27802cce7c0cbf38.js",
+  "/assets/css/assets/css/app-e18b30e99642b43293f342422dba216d.css",
+  "/images/images/logo-06a11be1f2cdde2c851763d00bdd2e80.svg",
+  "/images/images/icon-192-e707fcad5be71a627ab2d59dcbb2e400.png",
+  "/images/images/icon-512-d82f3168192fa5d76d6ebe05ab3f9f12.png"
 ];
 
 self.addEventListener("install", (event) => {

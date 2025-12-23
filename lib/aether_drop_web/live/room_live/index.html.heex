@@ -246,188 +246,181 @@
     
 <!-- Content Area -->
     <div class="glass rounded-2xl flex-1 p-4 md:p-6 relative overflow-hidden transition-all shadow-lg flex flex-col">
-      <%= if @active_tab == "files" do %>
-        <div id="section-files" class="h-full flex flex-col">
-          <!-- Drop Zone -->
-          <!-- Drop Zone -->
-          <div class="relative group cursor-pointer overflow-hidden rounded-3xl transition-all duration-500 mb-6">
-            <div class="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-purple-500/5 group-hover:from-sky-500/10 group-hover:to-purple-500/10 transition-colors duration-500">
-            </div>
-            <div class="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-slate-900/40 border border-white/20 dark:border-white/10 group-hover:border-sky-500/30 transition-all duration-500 rounded-3xl">
-            </div>
-
-            <div class="relative z-10 h-48 flex flex-col items-center justify-center p-6 text-center">
-              <div class="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 shadow-xl shadow-sky-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border border-slate-100 dark:border-slate-700">
-                <i class="ph-duotone ph-cloud-arrow-up text-3xl text-sky-500 group-hover:text-purple-500 transition-colors duration-500">
-                </i>
-              </div>
-
-              <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 mb-1">
-                Upload Files
-              </h3>
-              <p class="text-sm text-slate-500 dark:text-slate-400 max-w-[200px] leading-relaxed group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
-                Drag & drop or
-                <span class="text-sky-500 font-bold underline decoration-2 decoration-sky-500/30 hover:decoration-sky-500 transition-all">
-                  browse
-                </span>
-                to send
-              </p>
-            </div>
-            
-<!-- Dashed Border Overlay -->
-            <div class="absolute inset-4 border-2 border-dashed border-slate-300/50 dark:border-slate-600/50 rounded-2xl pointer-events-none group-hover:border-sky-400/50 transition-colors duration-500">
-            </div>
-
-            <input
-              type="file"
-              id="file-input"
-              class="absolute inset-0 opacity-0 cursor-pointer z-20"
-              phx-hook="FileUpload"
-            />
+      <div
+        id="section-files"
+        data-tab-section="files"
+        class={["h-full flex flex-col", @active_tab != "files" && "hidden"]}
+      >
+        <!-- Drop Zone -->
+        <div class="relative group cursor-pointer overflow-hidden rounded-3xl transition-all duration-500 mb-6">
+          <div class="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-purple-500/5 group-hover:from-sky-500/10 group-hover:to-purple-500/10 transition-colors duration-500">
           </div>
-          
-<!-- Recent Transfers List -->
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Activity Queue
-            </h4>
-            <button
-              phx-click="clear_transfers"
-              class="text-xs text-sky-500 font-medium hover:underline"
-            >
-              Clear All
-            </button>
+          <div class="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-slate-900/40 border border-white/20 dark:border-white/10 group-hover:border-sky-500/30 transition-all duration-500 rounded-3xl">
           </div>
 
-          <div class="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth" id="file-list">
-            <AppComponents.file_list transfers={@transfers} device_id={@device.id} />
-          </div>
-        </div>
-      <% end %>
-
-      <%= if @active_tab == "clipboard" do %>
-        <div id="section-clipboard" class="h-full flex flex-col relative animate-slide-in">
-          <form phx-submit="clipboard:push" class="flex-1 flex flex-col gap-3">
-            <div class="relative flex-1 group">
-              <textarea
-                id="clipboard-input"
-                name="content"
-                placeholder="Paste text here to share with other devices..."
-                class="w-full h-full min-h-[120px] bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none transition-all placeholder:text-slate-400 group-hover:border-sky-500/30"
-              ></textarea>
-              <div class="absolute bottom-3 right-3 flex gap-2">
-                <button
-                  type="button"
-                  onclick="let ta = document.getElementById('clipboard-input'); ta.value = ''; ta.focus();"
-                  class="p-2 bg-slate-200/80 dark:bg-slate-800/80 text-slate-500 hover:text-red-500 rounded-lg transition-colors backdrop-blur-md"
-                  title="Clear text"
-                >
-                  <i class="ph-bold ph-trash"></i>
-                </button>
-                <button
-                  type="button"
-                  id="btn-copy"
-                  onclick="
-                    let ta = document.getElementById('clipboard-input');
-                    navigator.clipboard.writeText(ta.value).then(() => {
-                      let btn = this;
-                      let original = btn.innerHTML;
-                      btn.classList.add('bg-green-500', 'text-white');
-                      btn.classList.remove('bg-slate-200/80', 'dark:bg-slate-800/80', 'text-slate-700', 'dark:text-slate-200');
-                      btn.innerHTML = '<i class=\'ph-bold ph-check\'></i> Copied!';
-                      setTimeout(() => {
-                        btn.innerHTML = original;
-                        btn.classList.remove('bg-green-500', 'text-white');
-                        btn.classList.add('bg-slate-200/80', 'dark:bg-slate-800/80', 'text-slate-700', 'dark:text-slate-200');
-                      }, 2000);
-                    });
-                  "
-                  class="px-4 py-2 bg-slate-200/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg font-bold text-xs uppercase tracking-wide transition-all backdrop-blur-md flex items-center gap-2"
-                >
-                  <i class="ph-bold ph-copy"></i> Copy
-                </button>
-              </div>
+          <div class="relative z-10 h-48 flex flex-col items-center justify-center p-6 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 shadow-xl shadow-sky-500/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border border-slate-100 dark:border-slate-700">
+              <i class="ph-duotone ph-cloud-arrow-up text-3xl text-sky-500 group-hover:text-purple-500 transition-colors duration-500">
+              </i>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-500 dark:text-slate-400">
-                Share text across devices instantly
+            <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 mb-1">
+              Upload Files
+            </h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-[200px] leading-relaxed group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
+              Drag & drop or
+              <span class="text-sky-500 font-bold underline decoration-2 decoration-sky-500/30 hover:decoration-sky-500 transition-all">
+                browse
               </span>
-              <button
-                type="submit"
-                class="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white rounded-lg font-bold text-xs uppercase tracking-wide shadow-lg shadow-sky-500/20 transition-all transform active:scale-95 flex items-center gap-2"
-              >
-                <i class="ph-bold ph-paper-plane-tilt"></i> Push
-              </button>
-            </div>
-          </form>
-
-          <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-xl flex items-start gap-3">
-            <i class="ph-fill ph-info text-yellow-500 mt-0.5"></i>
-            <p class="text-xs text-yellow-700 dark:text-yellow-500">
-              <strong>Privacy Note:</strong>
-              Content is end-to-end encrypted and transient. It is cleared from memory when you leave.
+              to send
             </p>
           </div>
-        </div>
-      <% end %>
 
-      <%= if @active_tab == "chat" do %>
-        <div id="section-chat" class="h-full flex flex-col relative animate-slide-in">
-          <!-- Messages List -->
-          <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 p-4 scroll-smooth">
-            <%= if @messages == [] do %>
-              <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
-                <i class="ph-duotone ph-chat-circle-dots text-6xl mb-2"></i>
-                <p class="text-sm">No messages yet</p>
-              </div>
-            <% else %>
-              <%= for msg <- Enum.reverse(@messages) do %>
+          <div class="absolute inset-4 border-2 border-dashed border-slate-300/50 dark:border-slate-600/50 rounded-2xl pointer-events-none group-hover:border-sky-400/50 transition-colors duration-500">
+          </div>
+
+          <input
+            type="file"
+            id="file-input"
+            class="absolute inset-0 opacity-0 cursor-pointer z-20"
+            phx-hook="FileUpload"
+          />
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Activity Queue
+          </h4>
+          <button
+            phx-click="clear_transfers"
+            class="text-xs text-sky-500 font-medium hover:underline"
+          >
+            Clear All
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth" id="file-list">
+          <AppComponents.file_list transfers={@transfers} device_id={@device.id} />
+        </div>
+      </div>
+
+      <div
+        id="section-clipboard"
+        data-tab-section="clipboard"
+        class={[
+          "h-full flex flex-col relative animate-slide-in",
+          @active_tab != "clipboard" && "hidden"
+        ]}
+      >
+        <form phx-submit="clipboard:push" class="flex-1 flex flex-col gap-3">
+          <div class="relative flex-1 group">
+            <textarea
+              id="clipboard-input"
+              name="content"
+              placeholder="Paste text here to share with other devices..."
+              class="w-full h-full min-h-[120px] bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none transition-all placeholder:text-slate-400 group-hover:border-sky-500/30"
+            ></textarea>
+            <div class="absolute bottom-3 right-3 flex gap-2">
+              <button
+                type="button"
+                onclick="let ta = document.getElementById('clipboard-input'); ta.value = ''; ta.focus();"
+                class="p-2 bg-slate-200/80 dark:bg-slate-800/80 text-slate-500 hover:text-red-500 rounded-lg transition-colors backdrop-blur-md"
+                title="Clear text"
+              >
+                <i class="ph-bold ph-trash"></i>
+              </button>
+              <button
+                type="button"
+                id="btn-copy"
+                onclick="let ta = document.getElementById('clipboard-input'); navigator.clipboard.writeText(ta.value).then(() => { let btn = this; let original = btn.innerHTML; btn.classList.add('bg-green-500', 'text-white'); btn.classList.remove('bg-slate-200/80', 'dark:bg-slate-800/80', 'text-slate-700', 'dark:text-slate-200'); btn.innerHTML = '<i class=\'ph-bold ph-check\'></i> Copied!'; setTimeout(() => { btn.innerHTML = original; btn.classList.remove('bg-green-500', 'text-white'); btn.classList.add('bg-slate-200/80', 'dark:bg-slate-800/80', 'text-slate-700', 'dark:text-slate-200'); }, 2000); });"
+                class="px-4 py-2 bg-slate-200/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg font-bold text-xs uppercase tracking-wide transition-all backdrop-blur-md flex items-center gap-2"
+              >
+                <i class="ph-bold ph-copy"></i> Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500 dark:text-slate-400">
+              Share text across devices instantly
+            </span>
+            <button
+              type="submit"
+              class="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white rounded-lg font-bold text-xs uppercase tracking-wide shadow-lg shadow-sky-500/20 transition-all transform active:scale-95 flex items-center gap-2"
+            >
+              <i class="ph-bold ph-paper-plane-tilt"></i> Push
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-xl flex items-start gap-3">
+          <i class="ph-fill ph-info text-yellow-500 mt-0.5"></i>
+          <p class="text-xs text-yellow-700 dark:text-yellow-500">
+            <strong>Privacy Note:</strong>
+            Content is end-to-end encrypted and transient. It is cleared from memory when you leave.
+          </p>
+        </div>
+      </div>
+
+      <div
+        id="section-chat"
+        data-tab-section="chat"
+        class={[
+          "h-full flex flex-col relative animate-slide-in",
+          @active_tab != "chat" && "hidden"
+        ]}
+      >
+        <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 p-4 scroll-smooth">
+          <%= if @messages == [] do %>
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+              <i class="ph-duotone ph-chat-circle-dots text-6xl mb-2"></i>
+              <p class="text-sm">No messages yet</p>
+            </div>
+          <% else %>
+            <%= for msg <- Enum.reverse(@messages) do %>
+              <div class={[
+                "flex flex-col max-w-[80%]",
+                if(msg.sender_id == @device.id,
+                  do: "self-end items-end",
+                  else: "self-start items-start"
+                )
+              ]}>
                 <div class={[
-                  "flex flex-col max-w-[80%]",
+                  "px-4 py-2 rounded-2xl text-sm shadow-sm break-words",
                   if(msg.sender_id == @device.id,
-                    do: "self-end items-end",
-                    else: "self-start items-start"
+                    do: "bg-sky-500 text-white rounded-br-none",
+                    else:
+                      "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none"
                   )
                 ]}>
-                  <div class={[
-                    "px-4 py-2 rounded-2xl text-sm shadow-sm break-words",
-                    if(msg.sender_id == @device.id,
-                      do: "bg-sky-500 text-white rounded-br-none",
-                      else:
-                        "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none"
-                    )
-                  ]}>
-                    {msg.content}
-                  </div>
-                  <span class="text-[10px] text-slate-400 mt-1 px-1">
-                    {msg.sender_name} • {Calendar.strftime(msg.timestamp, "%I:%M %p")}
-                  </span>
+                  {msg.content}
                 </div>
-              <% end %>
+                <span class="text-[10px] text-slate-400 mt-1 px-1">
+                  {msg.sender_name} • {Calendar.strftime(msg.timestamp, "%I:%M %p")}
+                </span>
+              </div>
             <% end %>
-          </div>
-          
-<!-- Input Area -->
-          <div class="mt-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <form phx-submit="chat:send" class="flex items-center gap-2">
-              <input
-                type="text"
-                name="content"
-                class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400"
-                placeholder="Type a message..."
-                autocomplete="off"
-              />
-              <button
-                type="submit"
-                class="p-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl transition-colors shadow-lg shadow-sky-500/20"
-              >
-                <i class="ph-bold ph-paper-plane-right"></i>
-              </button>
-            </form>
-          </div>
+          <% end %>
         </div>
-      <% end %>
+
+        <div class="mt-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+          <form phx-submit="chat:send" class="flex items-center gap-2">
+            <input
+              type="text"
+              name="content"
+              class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400"
+              placeholder="Type a message..."
+              autocomplete="off"
+            />
+            <button
+              type="submit"
+              class="p-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl transition-colors shadow-lg shadow-sky-500/20"
+            >
+              <i class="ph-bold ph-paper-plane-right"></i>
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </main>
