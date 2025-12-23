@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "cd .. && mix assets.deploy && rm -f _build/esbuild*"
+    "deploy": "cd .. && mix assets.deploy && node assets/pwa-sync.js && rm -f _build/esbuild*"
   },
   "keywords": [],
   "author": "",
