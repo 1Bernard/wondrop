@@ -50,9 +50,7 @@ export const Clipboard = {
     this.el.addEventListener("copy-current-url", () => {
         const url = window.location.href;
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(() => {
-                alert("Link copied!");
-            }).catch(() => {
+            navigator.clipboard.writeText(url).catch(() => {
                 prompt("Copy this link manually:", url);
             });
         } else {

@@ -7,15 +7,21 @@ defmodule AetherDropWeb.RoomLive.Index do
   @impl true
   def mount(%{"slug" => room_slug}, _session, socket) do
     # 1. Identity Management
-    # Randomize position for Radar
-    {x, y} = {Enum.random(10..90), Enum.random(10..90)}
+    # Randomize position for Radar using Polar Coordinates to stay inside circular bounds
+    # Center is (50, 50), max radius is ~40 to avoid touching edges
+    angle = :rand.uniform() * 2 * :math.pi()
+    # sqrt for uniform distribution in circle
+    radius = :math.sqrt(:rand.uniform()) * 40
+
+    x = 50 + radius * :math.cos(angle)
+    y = 50 + radius * :math.sin(angle)
 
     device = %{
       id: Nanoid.generate(),
       name: "Anonymous Device",
       type: :desktop,
-      x: x,
-      y: y,
+      x: Float.round(x, 2),
+      y: Float.round(y, 2),
       stealth_mode: false,
       quick_save: false
     }

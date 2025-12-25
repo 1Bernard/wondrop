@@ -1,19 +1,21 @@
 export const Tabs = {
   mounted() {
+    console.log("[Tabs] Hook mounted on", this.el.id);
     this.el.addEventListener("click", (e) => {
       const button = e.target.closest("[data-tab-target]");
       if (!button) return;
 
       const tabName = button.getAttribute("data-tab-target");
+      console.log("[Tabs] Switching to:", tabName);
       this.activeTab(tabName);
       
-      // Notify the server optimistically if possible
+      // Notify the server optimistically
       this.pushEvent("switch_tab", { tab: tabName });
     });
   },
 
   activeTab(tabName) {
-    // Update Buttons
+    // Update Buttons within this container
     this.el.querySelectorAll("[data-tab-target]").forEach((btn) => {
       const isActive = btn.getAttribute("data-tab-target") === tabName;
       if (isActive) {
@@ -26,7 +28,10 @@ export const Tabs = {
     });
 
     // Update Sections
-    document.querySelectorAll("[data-tab-section]").forEach((section) => {
+    const sections = document.querySelectorAll("[data-tab-section]");
+    console.log(`[Tabs] Found ${sections.length} sections for tab: ${tabName}`);
+    
+    sections.forEach((section) => {
       if (section.getAttribute("data-tab-section") === tabName) {
         section.classList.remove("hidden");
         section.classList.add("animate-slide-in");

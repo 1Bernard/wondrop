@@ -76,7 +76,7 @@ export const WebRTC = {
               console.warn(`Connection to ${peer_id} timed out. Switching to Bridge Mode...`);
               this.pushEvent("bridge:auto_switch", { reason: "timeout" });
           }
-      }, 7000); // 7 seconds timeout
+      }, 4000); // 4 seconds timeout
 
       peer.on('connect', () => {
           clearTimeout(timeout);
@@ -358,8 +358,9 @@ export const WebRTC = {
       console.error('Peer Error:', err);
       this.pushEvent("peer_error", { error: err.toString() });
       this.pushEvent("bridge:auto_switch", { reason: "error" });
+      if (!peer.destroyed) peer.destroy();
     });
-    
+
     peer.on('close', () => {
         console.log("Peer closed");
         if (this.peers[peer_id]) {

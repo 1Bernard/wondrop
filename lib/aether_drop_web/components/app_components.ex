@@ -36,7 +36,7 @@ defmodule AetherDropWeb.AppComponents do
     <div
       id="radar-view"
       class={[
-        "flex-1 relative flex items-center justify-center transition-colors duration-500",
+        "flex-1 min-h-0 relative flex items-center justify-center transition-colors duration-500",
         if(@mode == :bridge,
           do: "radar-mode-bridge bg-purple-100/50 dark:bg-purple-900/10",
           else: "radar-mode-local bg-slate-50/50 dark:bg-slate-900/30"
@@ -87,20 +87,24 @@ defmodule AetherDropWeb.AppComponents do
       phx-click="select_device"
       phx-value-id={@device.id}
       class="absolute group transition-all duration-500 transform hover:scale-110 focus:outline-none z-30"
-      style={"top: #{@device.y}%; left: #{@device.x}%"}
+      style={"top: #{@device.y}%; left: #{@device.x}%; transform: translate(-50%, -50%);"}
       title={@device.name}
     >
       <div class={[
         "w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 flex items-center justify-center shadow-xl relative transition-all duration-300",
-        if(@selected,
-          do: "border-green-500 dark:border-green-500 ring-4 ring-green-500/30 scale-110",
-          else:
-            if(@connecting,
-              do: "border-sky-500 ring-4 ring-sky-500/30 animate-pulse",
-              else:
-                "border-slate-200 dark:border-slate-700 group-hover:border-sky-400 dark:group-hover:border-sky-500"
-            )
-        )
+        cond do
+          @selected ->
+            "border-green-500 dark:border-green-500 ring-4 ring-green-500/30 scale-110"
+
+          @connected ->
+            "border-sky-500 dark:border-sky-400 ring-4 ring-sky-500/30 animate-connected-glow"
+
+          @connecting ->
+            "border-sky-500 ring-4 ring-sky-500/30 animate-pulse"
+
+          true ->
+            "border-slate-200 dark:border-slate-700 group-hover:border-sky-400 dark:group-hover:border-sky-500"
+        end
       ]}>
         <i class={[
           "ph-duotone text-2xl transition-colors",
@@ -129,16 +133,28 @@ defmodule AetherDropWeb.AppComponents do
           </div>
         </div>
       </div>
-      <span class={[
-        "absolute -bottom-7 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded transition-all whitespace-nowrap bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm z-40",
+      <div class={[
+        "absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 transition-all",
         if(@selected or @connected,
-          do: "opacity-100",
-          else: "opacity-0 group-hover:opacity-100"
+          do: "opacity-100 scale-100",
+          else: "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
         )
       ]}>
-        {@device.name}
-        <span :if={@connected} class="ml-1 text-[8px] text-sky-500">LIVE</span>
-      </span>
+        <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded whitespace-nowrap bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm">
+          {@device.name}
+        </span>
+        <span
+          :if={@connected}
+          class="flex items-center gap-1 bg-sky-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-sky-500/20 animate-pulse uppercase tracking-widest"
+        >
+          <span class="relative flex h-1.5 w-1.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75">
+            </span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+          </span>
+          Connected
+        </span>
+      </div>
       <div
         :if={@connecting}
         class="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-sky-500 text-white text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shadow-lg animate-bounce"
