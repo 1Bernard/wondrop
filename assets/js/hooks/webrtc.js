@@ -56,36 +56,60 @@ export const WebRTC = {
 
     // Listen for Signal from Server (Relay)
     this.handleEvent("phx-p2p-signal", ({ sender_id, signal }) => {
+      console.log(`[WebRTC] Received signal from ${sender_id}:`, signal.type || (signal.candidate ? "candidate" : "unknown"));
+      
       // If we don't have a peer for this sender, create one (we are receiver)
       if (!this.peers[sender_id]) {
+        console.log(`[WebRTC] Peer ${sender_id} not found. Creating receiver peer.`);
         this.createPeer(sender_id, false);
       }
+      
       // Pass signal to peer
-      this.peers[sender_id].signal(signal);
+      try {
+          this.peers[sender_id].signal(signal);
+      } catch (e) {
+          console.error(`[WebRTC] Error signaling peer ${sender_id}:`, e);
+      }
     });
 
     // Listen for "Initiate" command (We are initiator)
     this.handleEvent("initiate_peer", ({ peer_id }) => {
-      if (this.peers[peer_id]) return; // Already connected
-      console.log(`Initiating connection to ${peer_id}`);
+      // Guard: Don't re-initiate if already connected OR currently trying to connect
+      if (this.peers[peer_id]) {
+          if (this.peers[peer_id].connected) {
+              console.log(`[WebRTC] Already connected to ${peer_id}. Skipping init.`);
+              return;
+          }
+          console.warn(`[WebRTC] Already attempting connection to ${peer_id}. Destroying old attempt and restarting...`);
+          this.peers[peer_id].destroy();
+          delete this.peers[peer_id];
+      }
+
+      console.log(`[WebRTC] Initiating P2P connection to ${peer_id}`);
       const peer = this.createPeer(peer_id, true); 
       
       // Automatic Failure Detection
       const timeout = setTimeout(() => {
-          if (!peer.connected) {
-              console.warn(`Connection to ${peer_id} timed out. Switching to Bridge Mode...`);
+          if (!peer.connected && !peer.destroyed) {
+              console.warn(`[WebRTC] Connection to ${peer_id} timed out (8s).`);
+              this.pushEvent("peer_error", { error: "P2P Connection timed out. Try again or use Bridge Mode." });
               this.pushEvent("bridge:auto_switch", { reason: "timeout" });
+              
+              if (this.peers[peer_id] === peer) {
+                  delete this.peers[peer_id];
+              }
+              peer.destroy();
           }
-      }, 4000); // 4 seconds timeout
+      }, 8000); // 8 seconds timeout (Increased for slower networks)
 
       peer.on('connect', () => {
           clearTimeout(timeout);
-          console.log(`Connected to peer ${peer_id}`);
+          console.log(`[WebRTC] Connected reached to peer ${peer_id}`);
           this.pushEvent("peer_connected", { peer_id: peer_id });
           
           // Flush pending files
           if (this.pendingFiles.length > 0) {
-              console.log(`Sending ${this.pendingFiles.length} pending files to ${peer_id}`);
+              console.log(`[WebRTC] Flushing ${this.pendingFiles.length} pending files to ${peer_id}`);
               this.pendingFiles.forEach(({ file, transferId }) => {
                   this.sendFile(peer, file, transferId);
               });
@@ -211,6 +235,15 @@ export const WebRTC = {
         }
     });
 
+    // Listen for connection cancellation
+    this.handleEvent("peer:cancel_connection", ({ peer_id }) => {
+        console.log(`[WebRTC] Received cancel_connection for ${peer_id}`);
+        if (this.peers[peer_id]) {
+            this.peers[peer_id].destroy();
+            delete this.peers[peer_id];
+        }
+    });
+
     // Global P2P Broadcast (for Chat/Clipboard)
     window.addEventListener("p2p:broadcast", (e) => {
         const payload = e.detail;
@@ -314,12 +347,31 @@ export const WebRTC = {
         peer = new SimplePeer({
           initiator: initiator,
           trickle: true,
-          // If we are on a local network (or hotspot), skip STUN to avoid timeout delays
-          // Host candidates (local IPs) are gathered automatically and are sufficient.
+          // Always include Google's STUN even on local networks to provide a robust fallback
+          // if the browser restricts local IP discovery (highly common on modern Chrome/Safari).
           config: { 
-            iceServers: this.isLocal ? [] : [{ urls: 'stun:stun.l.google.com:19302' }] 
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ] 
           } 
         });
+
+        console.log(`[WebRTC] Peer instance created for ${peer_id} (initiator: ${initiator})`);
+
+        // Debug ICE State
+        if (peer._pc) {
+          peer._pc.oniceconnectionstatechange = () => {
+             console.log(`[WebRTC] ICE State for ${peer_id}: %c${peer._pc.iceConnectionState}`, "font-weight: bold; color: #3b82f6");
+             if (peer._pc.iceConnectionState === 'failed') {
+                 console.warn("[WebRTC] ICE Negotiation failed. Candidates might be blocked by a firewall or VPN.");
+             }
+          };
+          
+          peer._pc.onicegatheringstatechange = () => {
+              console.log(`[WebRTC] ICE Gathering for ${peer_id}: ${peer._pc.iceGatheringState}`);
+          };
+        }
     } catch (e) {
         console.error("CRITICAL: P2P Connection failed to initialize. Likely 'Insecure Context' (HTTP).", e);
         this.pushEvent("peer_error", { error: "P2P blocked by browser security. Using Bridge Mode instead." });
@@ -328,6 +380,13 @@ export const WebRTC = {
     }
 
     peer.on('signal', signal => {
+      const type = signal.type || (signal.candidate ? "candidate" : "unknown");
+      console.log(`[WebRTC] Local signal generated for ${peer_id}:`, type);
+      
+      if (signal.candidate) {
+          console.log(`[WebRTC] ICE Candidate gathered: ${signal.candidate.candidate.split(' ')[7]} -> ${signal.candidate.candidate.split(' ')[4]}`);
+      }
+
       this.pushEvent("phx-p2p-signal", { 
         receiver_id: peer_id, 
         signal: signal 

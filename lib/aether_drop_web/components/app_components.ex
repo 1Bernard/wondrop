@@ -1,5 +1,6 @@
 defmodule AetherDropWeb.AppComponents do
   use Phoenix.Component
+  alias Phoenix.LiveView.JS
 
   @doc """
   Renders the interactive Radar component.
@@ -83,58 +84,63 @@ defmodule AetherDropWeb.AppComponents do
 
   def device_node(assigns) do
     ~H"""
-    <button
-      phx-click="select_device"
-      phx-value-id={@device.id}
-      class="absolute group transition-all duration-500 transform hover:scale-110 focus:outline-none z-30"
+    <div
+      class="absolute group transition-all duration-500 transform hover:scale-110 z-30"
       style={"top: #{@device.y}%; left: #{@device.x}%; transform: translate(-50%, -50%);"}
       title={@device.name}
     >
-      <div class={[
-        "w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 flex items-center justify-center shadow-xl relative transition-all duration-300",
-        cond do
-          @selected ->
-            "border-green-500 dark:border-green-500 ring-4 ring-green-500/30 scale-110"
-
-          @connected ->
-            "border-sky-500 dark:border-sky-400 ring-4 ring-sky-500/30 animate-connected-glow"
-
-          @connecting ->
-            "border-sky-500 ring-4 ring-sky-500/30 animate-pulse"
-
-          true ->
-            "border-slate-200 dark:border-slate-700 group-hover:border-sky-400 dark:group-hover:border-sky-500"
-        end
-      ]}>
-        <i class={[
-          "ph-duotone text-2xl transition-colors",
-          if(@device.type == :mobile, do: "ph-device-mobile", else: "ph-desktop"),
+      <button
+        phx-click="select_device"
+        phx-value-id={@device.id}
+        class="focus:outline-none"
+      >
+        <div class={[
+          "w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 flex items-center justify-center shadow-xl relative transition-all duration-300",
           cond do
-            @selected -> "text-green-600 dark:text-green-500"
-            @connected -> "text-sky-600 dark:text-sky-400"
-            true -> "text-slate-700 dark:text-slate-200"
+            @selected ->
+              "border-green-500 dark:border-green-500 ring-4 ring-green-500/30 scale-110"
+
+            @connected ->
+              "border-sky-500 dark:border-sky-400 ring-4 ring-sky-500/30 animate-connected-glow"
+
+            @connecting ->
+              "border-sky-500 ring-4 ring-sky-500/30 animate-pulse"
+
+            true ->
+              "border-slate-200 dark:border-slate-700 group-hover:border-sky-400 dark:group-hover:border-sky-500"
           end
         ]}>
-        </i>
-        <div
-          :if={@selected or @connected}
-          class={[
-            "absolute -top-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full",
-            if(@selected,
-              do: "bg-green-500",
-              else: "bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
-            )
-          ]}
-        >
+          <i class={[
+            "ph-duotone text-2xl transition-colors",
+            if(@device.type == :mobile, do: "ph-device-mobile", else: "ph-desktop"),
+            cond do
+              @selected -> "text-green-600 dark:text-green-500"
+              @connected -> "text-sky-600 dark:text-sky-400"
+              true -> "text-slate-700 dark:text-slate-200"
+            end
+          ]}>
+          </i>
           <div
-            :if={@connected}
-            class="absolute inset-0 bg-sky-400 rounded-full animate-ping opacity-75"
+            :if={@selected or @connected}
+            class={[
+              "absolute -top-1 -right-1 w-4 h-4 border-2 border-white dark:border-slate-800 rounded-full",
+              if(@selected,
+                do: "bg-green-500",
+                else: "bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.8)]"
+              )
+            ]}
           >
+            <div
+              :if={@connected}
+              class="absolute inset-0 bg-sky-400 rounded-full animate-ping opacity-75"
+            >
+            </div>
           </div>
         </div>
-      </div>
+      </button>
+
       <div class={[
-        "absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 transition-all",
+        "absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 transition-all pointer-events-none",
         if(@selected or @connected,
           do: "opacity-100 scale-100",
           else: "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
@@ -155,13 +161,18 @@ defmodule AetherDropWeb.AppComponents do
           Connected
         </span>
       </div>
-      <div
+
+      <button
         :if={@connecting}
-        class="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-sky-500 text-white text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shadow-lg animate-bounce"
+        phx-click="cancel_connection"
+        class="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-sky-500 hover:bg-red-500 text-white text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shadow-lg animate-bounce transition-colors group/conn z-40"
       >
-        <i class="ph-bold ph-circle-notch animate-spin"></i> Connecting
-      </div>
-    </button>
+        <i class="ph-bold ph-circle-notch animate-spin group-hover/conn:hidden"></i>
+        <i class="ph-bold ph-x hidden group-hover/conn:inline"></i>
+        <span class="group-hover/conn:hidden">Connecting</span>
+        <span class="hidden group-hover/conn:inline">Cancel</span>
+      </button>
+    </div>
     """
   end
 

@@ -370,11 +370,37 @@ defmodule AetherDropWeb.RoomLive.Index do
   end
 
   def handle_event("select_device", %{"id" => peer_id}, socket) do
-    {:noreply,
-     socket
-     |> assign(:selected_peer_id, peer_id)
-     |> assign(:connecting_peer_id, peer_id)
-     |> push_event("initiate_peer", %{peer_id: peer_id})}
+    if socket.assigns.bridge_mode or socket.assigns.insecure_context do
+      # In Bridge Mode or Insecure Context, we don't need to negotiate P2P. Just select.
+      {:noreply,
+       socket
+       |> assign(:selected_peer_id, peer_id)
+       |> assign(:connecting_peer_id, nil)}
+    else
+      {:noreply,
+       socket
+       |> assign(:selected_peer_id, peer_id)
+       |> assign(:connecting_peer_id, peer_id)
+       |> push_event("initiate_peer", %{peer_id: peer_id})}
+    end
+  end
+
+  def handle_event("cancel_connection", _params, socket) do
+    peer_id = socket.assigns.connecting_peer_id
+
+    socket =
+      socket
+      |> assign(:connecting_peer_id, nil)
+      |> assign(:selected_peer_id, nil)
+
+    socket =
+      if peer_id do
+        push_event(socket, "peer:cancel_connection", %{peer_id: peer_id})
+      else
+        socket
+      end
+
+    {:noreply, socket}
   end
 
   def handle_event("save_file", %{"id" => id}, socket) do
