@@ -22,7 +22,7 @@ services:
       PORT: 4000
       DATABASE_URL: ecto://postgres:postgres@db/aether_drop_prod
       # IMPORTANT: Change this for real production use!
-      SECRET_KEY_BASE: "super-secret-key-base-change-me-in-production-please-1234567890"
+      SECRET_KEY_BASE: "super-secret-key-base-change-me-in-production-please-1234567890-at-least-64-bytes"
       PHX_SERVER: "true"
     depends_on:
       - db
