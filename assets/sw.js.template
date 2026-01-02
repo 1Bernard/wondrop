@@ -1,4 +1,4 @@
-const CACHE_NAME = "wondrop-v1";
+const CACHE_NAME = "wondrop-v2";
 const OFFLINE_URL = "/app";
 
 // These will be replaced by the build script

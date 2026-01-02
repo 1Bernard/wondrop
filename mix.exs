@@ -90,7 +90,8 @@ defmodule AetherDrop.MixProject do
       "assets.deploy": [
         "tailwind aether_drop --minify",
         "esbuild aether_drop --minify",
-        "phx.digest"
+        "phx.digest",
+        "cmd node assets/pwa-sync.js"
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
