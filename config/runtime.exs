@@ -55,8 +55,12 @@ if config_env() == :prod do
 
   config :aether_drop, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  url_scheme = System.get_env("URL_SCHEME") || "https"
+  url_port = String.to_integer(System.get_env("URL_PORT") || "443")
+
   config :aether_drop, AetherDropWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
+    url: [host: host, port: url_port, scheme: url_scheme],
+    check_origin: false,
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
@@ -65,7 +69,9 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    force_ssl:
+      if(url_scheme == "https", do: [rewrite_on: [:x_forwarded_proto], hsts: true], else: false)
 
   # ## SSL Support
   #

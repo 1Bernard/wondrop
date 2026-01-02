@@ -11,7 +11,12 @@ defmodule AetherDrop.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      releases: [
+        aether_drop: [
+          validate_compile_env: false
+        ]
+      ]
     ]
   end
 

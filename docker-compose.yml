@@ -17,8 +17,10 @@ services:
       - "4000:4000"
     environment:
       # Access this on http://localhost:4000
-      # If accessing from another device on LAN, set this to your Machine IP
-      PHX_HOST: localhost
+      # PHX_HOST will be set automatically by start.sh, or default to localhost
+      PHX_HOST: ${HOST_IP:-localhost}
+      URL_SCHEME: http
+      URL_PORT: 4000
       PORT: 4000
       DATABASE_URL: ecto://postgres:postgres@db/aether_drop_prod
       # IMPORTANT: Change this for real production use!

@@ -68,16 +68,20 @@ Wondrop is a high-performance, decentralized file transfer platform built with *
 
 ### 🐳 Running with Docker
 
-Wondrop is fully containerized and can be run in production mode locally using Docker Compose. This is the easiest way to get the app running without installing Elixir or Node.js.
+Wondrop is fully containerized. We include a helper script to automatically detect your LAN IP so mobile devices can connect immediately.
 
 1.  **Prerequisites**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 2.  **Start the App**:
     ```bash
-    docker-compose up --build
+    ./start.sh
     ```
-3.  **Access**: Visit `http://localhost:4000`.
+3.  **Access**:
+    - **Computer**: `http://localhost:4000`
+    - **Mobile**: The script will print your LAN access URL (e.g., `http://192.168.1.5:4000`).
 
-> **Note**: The default `docker-compose.yml` uses a placeholder `SECRET_KEY_BASE` for convenience. For actual production deployments, ensure you set a secure key in your environment variables.
+> **Note regarding Mobile/LAN**: Modern browsers block P2P connections on insecure networks (HTTP). When connecting via your LAN IP, Wondrop will automatically switch to **Relay Mode** (Bridge Mode). This is expected behavior and file transfers will still work perfectly via the server.
+
+> **Note**: If you prefer running `docker-compose` directly, it will default to `localhost`. You can override this by setting the HOST_IP variable manually: `HOST_IP=192.168.1.5 docker-compose up --build`.
 
 ---
 
