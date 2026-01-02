@@ -1,6 +1,5 @@
 defmodule AetherDropWeb.AppComponents do
   use Phoenix.Component
-  alias Phoenix.LiveView.JS
 
   @doc """
   Renders the interactive Radar component.

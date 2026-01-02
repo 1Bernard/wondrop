@@ -66,6 +66,19 @@ Wondrop is a high-performance, decentralized file transfer platform built with *
 4.  **Visit the app**
     Navigate to `http://localhost:4000` in your browser.
 
+### 🐳 Running with Docker
+
+Wondrop is fully containerized and can be run in production mode locally using Docker Compose. This is the easiest way to get the app running without installing Elixir or Node.js.
+
+1.  **Prerequisites**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+2.  **Start the App**:
+    ```bash
+    docker-compose up --build
+    ```
+3.  **Access**: Visit `http://localhost:4000`.
+
+> **Note**: The default `docker-compose.yml` uses a placeholder `SECRET_KEY_BASE` for convenience. For actual production deployments, ensure you set a secure key in your environment variables.
+
 ---
 
 ## 🏗 Architecture Overview
